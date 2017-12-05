@@ -5,7 +5,7 @@ pip install -r requirements.pip
 python emigrate.py</code></pre>
  
 # Configure env
-* EMIGRATE_ISQL='/usr/bin/isql-fb')*
+* EMIGRATE_ISQL='/usr/bin/isql-fb'
 * EMIGRATE_BASH='bash'
 * EMIGRATE_MIGRATIONS='/migrations'
 * EMIGRATE_HOST='localhost'
