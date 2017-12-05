@@ -6,6 +6,8 @@ import json
 import subprocess
 
 HISTORY_NAME = 'history.json'
+ISQL = os.getenv('EMIGRATE_ISQL', '/usr/bin/isql-fb')
+BASH = os.getenv('EMIGRATE_BASH', 'bash')
 # MIGRATIONS = os.getenv('EMIGRATE_MIGRATIONS', '/migrations')
 # HOST = os.getenv('EMIGRATE_HOST', 'localhost')
 # PORT = os.getenv('EMIGRATE_PORT', 3050)
@@ -13,15 +15,14 @@ HISTORY_NAME = 'history.json'
 # DATABASE = os.getenv('EMIGRATE_DATABASE', 'firebird.fdb')
 # USER = os.getenv('EMIGRATE_USER', 'SYSDBA')
 # PASSWORD = os.getenv('EMIGRATE_PASSWORD', 'masterkey')
-# ISQL = os.getenv('EMIGRATE_ISQL', '/usr/bin/isql-fb)
+
 MIGRATIONS = '/home/hunsche/projects/prospera/prospera-erp-api/migrations/common'
 HOST = 'localhost'
-PORT = 32773
+PORT = 3051
 PATH = '/var/lib/firebird/2.5/data/common/'
 DATABASE = 'common.fdb'
 USER = 'SYSDBA'
 PASSWORD = 'masterkey'
-ISQL = '/usr/bin/isql-fb'
 
 
 def get_date_on_name_file(file):
@@ -34,18 +35,30 @@ def get_date_on_name_file(file):
     return date
 
 
-def get_connection():
-    return fdb.connect(
-        host=HOST,
-        port=PORT,
-        database=os.path.join(PATH, DATABASE),
-        user=USER,
-        password=PASSWORD)
+def check_database():
+    try:
+        connect = fdb.connect(
+            host=HOST,
+            port=PORT,
+            database=os.path.join(PATH, DATABASE),
+            user=USER,
+            password=PASSWORD)
+        print('Connected in %s.' % (DATABASE))
+    except:
+        connect = fdb.create_database(
+            host=HOST,
+            port=PORT,
+            database=os.path.join(PATH, DATABASE),
+            user=USER,
+            password=PASSWORD)
+        print('Create database %s.' % (DATABASE))
+
+    return connect
 
 
 def get_migrations():
     ultimate_migrate = get_ultimate_migrate_executed()
-    migrations = {}
+    migrations = []
     for file_name in os.listdir(MIGRATIONS):
         if file_name.endswith(".sql"):
 
@@ -56,12 +69,9 @@ def get_migrations():
 
             script = open(os.path.join(MIGRATIONS, file_name), 'r').read()
             commands = script
-            migrations[get_date_on_name_file(file_name)] = {"file_name": file_name}
-            # {
-            #     "file_name": file_name, "commands": commands
-            # }
+            migrations.append(file_name)
 
-    sorted(migrations)
+    migrations.sort()
     return migrations
 
 
@@ -96,15 +106,25 @@ def set_ultimate_migrate_executed(file_name):
     file_json.write(data_json)
     file_json.close
 
+
 def execute_migrations():
     migrations = get_migrations()
-    for script in migrations:
-        print("-u " + USER + " -p " + PASSWORD + " " + os.path.join(PATH, DATABASE) + " -i " + os.path.join(MIGRATIONS, migrations[script]["file_name"]))
-        subprocess.call([ISQL, "-u " + USER + " -p " + PASSWORD + " " + os.path.join(PATH, DATABASE) + " -i " + os.path.join(MIGRATIONS, migrations[script]["file_name"])])
-        set_ultimate_migrate_executed(migrations[script]["file_name"])
+    if not migrations:
+        print('No migrations to run.')
+    for file_script in migrations:
+        database = "%s/%d:%s" % (HOST, PORT, os.path.join(PATH, DATABASE))
+        sql = os.path.join(MIGRATIONS, file_script)
+        execute = "%s -u %s -p %s %s -i %s" % (ISQL, USER, PASSWORD, database, sql)
+        print('Running %s .......................' % (file_script), end="")
+        subprocess.call([BASH, '-c', execute])
+        set_ultimate_migrate_executed(file_script)
+        print('ok')
+
 
 def main(argv):
+    check_database()
     execute_migrations()
+
 
 if __name__ == "__main__":
     main(sys.argv)
