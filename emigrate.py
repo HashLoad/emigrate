@@ -8,21 +8,13 @@ import subprocess
 HISTORY_NAME = 'history.json'
 ISQL = os.getenv('EMIGRATE_ISQL', '/usr/bin/isql-fb')
 BASH = os.getenv('EMIGRATE_BASH', 'bash')
-# MIGRATIONS = os.getenv('EMIGRATE_MIGRATIONS', '/migrations')
-# HOST = os.getenv('EMIGRATE_HOST', 'localhost')
-# PORT = os.getenv('EMIGRATE_PORT', 3050)
-# PATH = os.getenv('EMIGRATE_PATH', '/var/lib/firebird/2.5/data/')
-# DATABASE = os.getenv('EMIGRATE_DATABASE', 'firebird.fdb')
-# USER = os.getenv('EMIGRATE_USER', 'SYSDBA')
-# PASSWORD = os.getenv('EMIGRATE_PASSWORD', 'masterkey')
-
-MIGRATIONS = '/home/hunsche/projects/prospera/prospera-erp-api/migrations/common'
-HOST = 'localhost'
-PORT = 3051
-PATH = '/var/lib/firebird/2.5/data/common/'
-DATABASE = 'common.fdb'
-USER = 'SYSDBA'
-PASSWORD = 'masterkey'
+MIGRATIONS = os.getenv('EMIGRATE_MIGRATIONS', '/migrations')
+HOST = os.getenv('EMIGRATE_HOST', 'localhost')
+PORT = os.getenv('EMIGRATE_PORT', 3050)
+PATH = os.getenv('EMIGRATE_PATH', '/var/lib/firebird/2.5/data/')
+DATABASE = os.getenv('EMIGRATE_DATABASE', 'firebird.fdb')
+USER = os.getenv('EMIGRATE_USER', 'SYSDBA')
+PASSWORD = os.getenv('EMIGRATE_PASSWORD', 'masterkey')
 
 
 def get_date_on_name_file(file):
