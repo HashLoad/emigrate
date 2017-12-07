@@ -31,7 +31,7 @@ def check_database():
     try:
         connect = fdb.connect(
             host=HOST,
-            port=PORT,
+            port=int(PORT),
             database=os.path.join(PATH, DATABASE),
             user=USER,
             password=PASSWORD)
@@ -39,7 +39,7 @@ def check_database():
     except:
         connect = fdb.create_database(
             host=HOST,
-            port=PORT,
+            port=int(PORT),
             database=os.path.join(PATH, DATABASE),
             user=USER,
             password=PASSWORD)
@@ -83,8 +83,11 @@ def get_ultimate_migrate_executed():
     data = json.load(file_json)
     file_json.close()
 
-    if data:
-        return data[get_curdir_migrate()]
+    try:
+        if data:
+            return data[get_curdir_migrate()]
+    except:
+        return
 
 
 def set_ultimate_migrate_executed(file_name):
@@ -104,7 +107,7 @@ def execute_migrations():
     if not migrations:
         print('No migrations to run.')
     for file_script in migrations:
-        database = "%s/%d:%s" % (HOST, PORT, os.path.join(PATH, DATABASE))
+        database = "%s/%d:%s" % (HOST, int(PORT), os.path.join(PATH, DATABASE))
         sql = os.path.join(MIGRATIONS, file_script)
         execute = "%s -u %s -p %s %s -i %s" % (ISQL, USER, PASSWORD, database, sql)
         print('Running %s .......................' % (file_script), end="")
