@@ -66,11 +66,6 @@ def get_migrations():
     migrations.sort()
     return migrations
 
-
-def get_curdir_migrate():
-    return MIGRATIONS.split("/")[-1]
-
-
 def get_ultimate_migrate_executed():
     if not os.path.exists(HISTORY_NAME):
         file_json = open(HISTORY_NAME, 'w')
@@ -85,7 +80,7 @@ def get_ultimate_migrate_executed():
 
     try:
         if data:
-            return data[get_curdir_migrate()]
+            return data[DATABASE]
     except:
         return
 
@@ -96,7 +91,7 @@ def set_ultimate_migrate_executed(file_name):
     file_json.close()
 
     file_json = open(HISTORY_NAME, 'w')
-    data[get_curdir_migrate()] = file_name
+    data[DATABASE] = file_name
     data_json = json.dumps(data, sort_keys=True, indent=4)
     file_json.write(data_json)
     file_json.close
