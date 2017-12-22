@@ -6,6 +6,7 @@ import json
 import subprocess
 
 HISTORY_NAME = 'history.json'
+HISTORY_LOG = 'history.log'
 ISQL = os.getenv('EMIGRATE_ISQL', '/usr/bin/isql-fb')
 BASH = os.getenv('EMIGRATE_BASH', 'bash')
 MIGRATIONS = os.getenv('EMIGRATE_MIGRATIONS', '/migrations')
@@ -96,6 +97,8 @@ def set_ultimate_migrate_executed(file_name):
     file_json.write(data_json)
     file_json.close
 
+def write_log(message):
+    subprocess.call([BASH, '-c', 'echo %s >> %s' % (message, HISTORY_LOG)])    
 
 def execute_migrations():
     migrations = get_migrations()
@@ -105,11 +108,15 @@ def execute_migrations():
         database = "%s/%d:%s" % (HOST, int(PORT), os.path.join(PATH, DATABASE))
         sql = os.path.join(MIGRATIONS, file_script)
         execute = "%s -u %s -p %s %s -i %s" % (ISQL, USER, PASSWORD, database, sql)
-        print('Running %s .......................' % (file_script), end="")
+        message = 'Running %s .......................' % (file_script)
+        write_log('')
+        write_log(message)
+        print(message, end="")
         subprocess.call([BASH, '-c', execute])
         set_ultimate_migrate_executed(file_script)
-        print('ok')
-
+        message = 'ok'
+        print(message)
+        write_log(message)
 
 def main(argv):
     check_database()
