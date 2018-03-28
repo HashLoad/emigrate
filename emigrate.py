@@ -7,6 +7,7 @@ import subprocess
 
 HISTORY_NAME = 'history.json'
 HISTORY_LOG = 'history.log'
+PATH_FILES = os.getenv('PATH_FILES', os.getcwd()) 
 ISQL = os.getenv('EMIGRATE_ISQL', '/usr/bin/isql-fb')
 BASH = os.getenv('EMIGRATE_BASH', 'bash')
 MIGRATIONS = os.getenv('EMIGRATE_MIGRATIONS', '/migrations')
@@ -68,14 +69,15 @@ def get_migrations():
     return migrations
 
 def get_ultimate_migrate_executed():
-    if not os.path.exists(HISTORY_NAME):
-        file_json = open(HISTORY_NAME, 'w')
+    file_name = '%s/%s' % (PATH_FILES, HISTORY_NAME)
+    if not os.path.exists(file_name):
+        file_json = open(file_name, 'w')
         data = {}
         data_json = json.dumps(data, sort_keys=True, indent=4)
         file_json.write(data_json)
         file_json.close
 
-    file_json = open(HISTORY_NAME, 'r')
+    file_json = open(file_name, 'r')
     data = json.load(file_json)
     file_json.close()
 
@@ -86,19 +88,20 @@ def get_ultimate_migrate_executed():
         return
 
 
-def set_ultimate_migrate_executed(file_name):
-    file_json = open(HISTORY_NAME, 'r')
+def set_ultimate_migrate_executed(file_script):
+    file_name = '%s/%s' % (PATH_FILES, HISTORY_NAME)
+    file_json = open(file_name, 'r')
     data = json.load(file_json)
     file_json.close()
 
-    file_json = open(HISTORY_NAME, 'w')
-    data[DATABASE] = file_name
+    file_json = open(file_name, 'w')
+    data[DATABASE] = file_script
     data_json = json.dumps(data, sort_keys=True, indent=4)
     file_json.write(data_json)
     file_json.close
 
 def write_log(message):
-    subprocess.call([BASH, '-c', 'echo %s >> %s' % (message, HISTORY_LOG)])    
+    subprocess.call([BASH, '-c', 'echo %s >> %s/%s' % (message, PATH_FILES, HISTORY_LOG)])    
 
 def execute_migrations():
     migrations = get_migrations()
